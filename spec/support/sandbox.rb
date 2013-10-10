@@ -1,4 +1,7 @@
 require 'benchmark'
+require 'securerandom'
+
+require 'bosh/dev/sandbox/postgresql'
 
 module Bosh
   module Spec
@@ -132,6 +135,9 @@ module Bosh
 
       def start
         setup_sandbox_root
+        FileUtils.mkdir_p(postgresql_dir)
+        @postgresql = Bosh::Dev::Sandbox::Postgresql.new(postgresql_dir, db_name)
+        @postgresql.create_db
 
         FileUtils.rm_rf(sqlite_db)
         Dir.chdir(DIRECTOR_PATH) do
@@ -142,7 +148,7 @@ module Bosh
             exit 1
           end
         end
-        FileUtils.cp(sqlite_db, backup_sqlite_db)
+        @postgresql.dump
 
         FileUtils.mkdir_p(cloud_storage_dir)
 
@@ -167,6 +173,7 @@ module Bosh
             sleep(0.1)
           end
         end
+
       end
 
       def reset(name)
@@ -184,7 +191,8 @@ module Bosh
 
         Redis.new(:host => "localhost", :port => redis_port).flushdb
 
-        FileUtils.cp(backup_sqlite_db, sqlite_db)
+        #FileUtils.cp(backup_sqlite_db, sqlite_db)
+        @postgresql.restore
 
         @name = pick_unique_name(name)
 
@@ -268,6 +276,7 @@ module Bosh
         kill_process(redis_pid)
         kill_process(nats_pid)
         kill_process(hm_pid)
+        @postgresql.drop_db
         FileUtils.rm_f(backup_sqlite_db)
         FileUtils.rm_f(db_path)
         FileUtils.rm_f(dns_db_path)
@@ -408,6 +417,18 @@ module Bosh
         test_number = ENV['TEST_ENV_NUMBER'].to_i
         return 61000 + test_number * 100 + offset
       end
+
+      def db_name
+        @db_name ||= SecureRandom.base64(6)
+      end
+
+      private
+
+      def postgresql_dir
+        sandbox_path('postgresql')
+      end
+
     end
+
   end
 end

@@ -15,15 +15,15 @@ scheduled_jobs:
   - command: ScheduledBackup
     schedule: '*/3 * * * * *'
 db:
-  adapter: sqlite
-  database: <%= sandbox_root %>/director.sqlite
+  adapter: postgres
+  database: <%= db_name %>
   connection_options:
     max_connections: 32
     pool_timeout: 10
 dns:
   db:
-    adapter: sqlite
-    database: <%= sandbox_root %>/director-dns.sqlite
+    adapter: postgres
+    database: <%= db_name %>
     connection_options:
       max_connections: 32
       pool_timeout: 10
