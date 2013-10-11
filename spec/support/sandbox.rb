@@ -431,7 +431,7 @@ module Bosh
       end
 
       def db_name
-        @db_name ||= SecureRandom.base64(6)
+        @db_name ||= SecureRandom.hex(6)
       end
 
       private

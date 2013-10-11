@@ -9,7 +9,7 @@ module Bosh::Dev::Sandbox
     describe '#dump' do
       it 'saves the postgresql db with pg_dump' do
         runner.should_receive(:run).with(
-          "pg_dump --format=custom --file=fake_directory/postgresql_backup fake_db_name")
+          'pg_dump --format=custom --file=fake_directory/postgresql_backup fake_db_name')
         postgresql.dump
       end
     end
@@ -17,21 +17,21 @@ module Bosh::Dev::Sandbox
     describe '#restore' do
       it 'restores the last dump with pg_load' do
         runner.should_receive(:run).with(
-          "pg_restore --clean --format=custom --file=fake_directory/postgresql_backup")
+          'pg_restore --clean --format=custom --file=fake_directory/postgresql_backup')
         postgresql.restore
       end
     end
 
     describe '#create_db' do
       it 'creates a database' do
-        runner.should_receive(:run).with("createdb fake_db_name")
+        runner.should_receive(:run).with('createdb fake_db_name')
         postgresql.create_db
       end
     end
 
     describe '#drop_db' do
       it 'drops a database' do
-        runner.should_receive(:run).with("dropdb fake_db_name")
+        runner.should_receive(:run).with('dropdb fake_db_name')
         postgresql.drop_db
       end
     end
