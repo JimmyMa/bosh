@@ -135,21 +135,22 @@ module Bosh
 
       def start
         setup_sandbox_root
-        FileUtils.mkdir_p(postgresql_dir)
-        @postgresql = Bosh::Dev::Sandbox::Postgresql.new(postgresql_dir, db_name)
-        @postgresql.create_db
 
-        FileUtils.rm_rf(sqlite_db)
-        Dir.chdir(DIRECTOR_PATH) do
-          output = `bin/bosh_director_migrate -c #{director_config}`
-          unless $?.exitstatus == 0
-            puts "Failed to run migration:"
-            puts output
-            exit 1
+        unless @postgresql
+          @postgresql = Bosh::Dev::Sandbox::Postgresql.new(sandbox_root, db_name)
+          @postgresql.create_db
+          FileUtils.rm_rf(sqlite_db)
+          Dir.chdir(DIRECTOR_PATH) do
+            output = `bin/bosh_director_migrate -c #{director_config}`
+            unless $?.exitstatus == 0
+              puts "Failed to run migration:"
+              puts output
+              exit 1
+            end
           end
         end
-        @postgresql.dump
 
+        # raise 'hell'
         FileUtils.mkdir_p(cloud_storage_dir)
 
         FileUtils.rm_rf(logs_path)
@@ -192,7 +193,18 @@ module Bosh
         Redis.new(:host => "localhost", :port => redis_port).flushdb
 
         #FileUtils.cp(backup_sqlite_db, sqlite_db)
-        @postgresql.restore
+        @postgresql.drop_db
+        @postgresql.create_db
+        FileUtils.rm_rf(sqlite_db)
+        Dir.chdir(DIRECTOR_PATH) do
+          output = `bin/bosh_director_migrate -c #{director_config}`
+          unless $?.exitstatus == 0
+            puts "Failed to run migration:"
+            puts output
+            exit 1
+          end
+        end
+
 
         @name = pick_unique_name(name)
 

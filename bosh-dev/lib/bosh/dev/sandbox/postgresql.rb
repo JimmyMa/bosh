@@ -1,6 +1,5 @@
 require 'bosh/dev'
 require 'bosh/core/shell'
-require 'socket'
 
 module Bosh::Dev::Sandbox
   class Postgresql
@@ -13,11 +12,12 @@ module Bosh::Dev::Sandbox
     end
 
     def dump
-      runner.run("pg_dump --host #{directory} --format=custom --file=#{dump_path} #{db_name}")
+      p "INFO: attemping to dump db #{db_name} to #{dump_path}"
+      runner.run("pg_dump --format=custom --file=#{dump_path} #{db_name}")
     end
 
     def restore
-      runner.run("pg_restore --host #{directory} --clean --format=custom --file=#{dump_path}")
+      runner.run("pg_restore --clean --format=custom --file=#{dump_path}")
     end
 
     def create_db
@@ -30,11 +30,10 @@ module Bosh::Dev::Sandbox
 
     private
 
-    attr_reader :runner, :db_name
+    attr_reader :db_name, :runner
 
     def dump_path
       "#{directory}/postgresql_backup"
     end
-
   end
 end
