@@ -28,7 +28,9 @@ module Bosh::Stemcell
     end
 
     def sha1
-      manifest.fetch('sha1')
+      raise 'sha1 must not be nil' \
+        unless sha1 = manifest.fetch('sha1')
+      sha1.to_s
     end
 
     def light?

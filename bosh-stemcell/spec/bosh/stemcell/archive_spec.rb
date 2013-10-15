@@ -45,8 +45,28 @@ module Bosh::Stemcell
     end
 
     describe '#sha1' do
-      it 'returns a sha1' do
-        expect(subject.sha1).to eq('fake-stemcell-sha1')
+      context 'when sha1 is just a string (from fake-stemcell-aws.tgz)' do
+        it 'returns a sha1 as a string' do
+          expect(subject.sha1).to eq('fake-stemcell-sha1')
+        end
+      end
+
+      context 'when sha1 happens to be a number' do
+        before { subject.manifest['sha1'] = 123 }
+
+        it 'returns a sha1 as a string' do
+          expect(subject.sha1).to eq('123')
+        end
+      end
+
+      context 'when the sha1 is nil' do
+        before { subject.manifest['sha1'] = nil }
+
+        it 'raises an error' do
+          expect{
+            subject.sha1
+          }.to raise_error(RuntimeError, 'sha1 must not be nil')
+        end
       end
     end
 
